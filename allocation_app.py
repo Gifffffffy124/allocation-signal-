@@ -75,7 +75,7 @@ if st.button("▶ Run Signal", type="primary", use_container_width=True):
                 top_assets = positive["Asset"].tolist()
                 weights    = allocs.tolist()
 
-            signal_date = prices_monthly.index[-1].strftime("%Y-%m-%d")
+            signal_date = prices_daily.index[-1].strftime("%Y-%m-%d")
 
             # ── Rankings table ───────────────────────
             st.subheader("Asset rankings")
