@@ -82,12 +82,12 @@ if st.button("▶ Run Signal", type="primary", use_container_width=True):
             st.dataframe(
                 display_df.style
                     .format({"3M Return": "{:+.2f}%"})
-                    .applymap(
+                    .map(
                         lambda v: "color: #2a9d5c; font-weight: 600" if isinstance(v, float) and v > 0
                                   else ("color: #d64c4c; font-weight: 600" if isinstance(v, float) and v < 0 else ""),
                         subset=["3M Return"]
                     )
-                    .applymap(
+                    .map(
                         lambda v: "background-color: #eaf3de" if v is True else "",
                         subset=["Top pick"]
                     ),
