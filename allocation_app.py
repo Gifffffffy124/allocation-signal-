@@ -10,6 +10,11 @@ st.set_page_config(
     layout="centered"
 )
 
+# ── Password gate ─────────────────────────────
+password = st.text_input("Enter password", type="password")
+if password != st.secrets["PASSWORD"]:
+    st.stop()
+
 # ── Sidebar config ───────────────────────────
 st.sidebar.header("Configuration")
 
