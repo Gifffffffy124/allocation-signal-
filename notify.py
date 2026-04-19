@@ -51,8 +51,8 @@ print("Sent:", message)
 
 # After the US message is sent, calculate LSE signal
 lse_map = {
-    "SPY": "CSPX", "TLT": "IDTL", "GLD": "IGLN",
-    "DBC": "ICOM", "IEF": "IBTM", "TIP": "ITPS", "SHY": "IBTS"
+    "SPY": "CSPX.L", "TLT": "IDTL.L", "GLD": "IGLN.L",
+    "DBC": "ICOM.L", "IEF": "IBTM.L", "TIP": "ITPS.L", "SHY": "IBTS.L"
 }
 lse_tickers = [lse_map[a] for a in ASSETS if a in lse_map]
 
