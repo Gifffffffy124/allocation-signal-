@@ -4,6 +4,12 @@ import pandas as pd
 import requests  # ← add this
 from datetime import datetime, timedelta
 
+def send_telegram(message):
+    token = st.secrets["TELEGRAM_TOKEN"]
+    chat_id = st.secrets["TELEGRAM_CHAT_ID"]
+    url = f"https://api.telegram.org/bot{token}/sendMessage"
+    requests.post(url, data={"chat_id": chat_id, "text": message, "parse_mode": "Markdown"})
+
 # ── Page config ──────────────────────────────
 st.set_page_config(
     page_title="Allocation Signal",
@@ -128,6 +134,11 @@ if st.button("▶ Run Signal", type="primary", use_container_width=True):
             c1.metric("Signal date", signal_date)
             c2.metric("Lookback", f"{LOOKBACK_MONTHS} months")
             c3.metric("Weight method", f"Power ^{POWER_STRENGTH}")
+
+            # ── Telegram notification ─────────────────
+            signal_lines = "\n".join([f"  {row['Asset']}: {row['Weight %']:.1f}%" for _, row in alloc_df.iterrows()])
+            message = f"📊 *Allocation Signal — {signal_date}*\n{signal_lines}\n\nLookback: {LOOKBACK_MONTHS} months"
+            send_telegram(message)
 
         except Exception as e:
             st.error(f"Something went wrong: {e}")
