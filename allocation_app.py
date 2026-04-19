@@ -48,8 +48,9 @@ if st.button("▶ Run Signal", type="primary", use_container_width=True):
 
             today = datetime.today()
             last_month_end = prices_monthly.index[-1]
-            if last_month_end.month == today.month:
-                st.warning(f"⚠️ Running mid-month — current month (April) not yet complete. For a clean signal, run on or after May 1.")
+            if prices_monthly.index[-1].month == today.month:
+                next_month = (today.replace(day=1) + timedelta(days=32)).replace(day=1)
+                st.warning(f"⚠️ Running mid-month — {today.strftime('%B')} not yet complete. For a clean signal, run on or after {next_month.strftime('%b 1')}.")
                 prices_monthly = prices_monthly.iloc[:-1]
 
             if len(prices_monthly) < LOOKBACK_MONTHS + 1:
