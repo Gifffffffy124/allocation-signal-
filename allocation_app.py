@@ -46,6 +46,12 @@ if st.button("▶ Run Signal", type="primary", use_container_width=True):
             prices_daily = raw["Close"] if len(ASSETS) > 1 else raw["Close"].to_frame(ASSETS[0])
             prices_monthly = prices_daily.resample("ME").last()
 
+            today = datetime.today()
+            last_month_end = prices_monthly.index[-1]
+            if last_month_end.month == today.month:
+                st.warning(f"⚠️ Running mid-month — current month (April) not yet complete. For a clean signal, run on or after May 1.")
+                prices_monthly = prices_monthly.iloc[:-1]
+
             if len(prices_monthly) < LOOKBACK_MONTHS + 1:
                 st.error("Not enough monthly data. Try reducing the lookback period.")
                 st.stop()
