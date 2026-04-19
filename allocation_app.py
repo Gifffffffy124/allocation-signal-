@@ -1,6 +1,7 @@
 import streamlit as st
 import yfinance as yf
 import pandas as pd
+import requests  # ← add this
 from datetime import datetime, timedelta
 
 # ── Page config ──────────────────────────────
