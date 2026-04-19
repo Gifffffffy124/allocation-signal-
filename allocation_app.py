@@ -152,13 +152,13 @@ with tab2:
     st.caption("London Stock Exchange equivalents for your US assets.")
 
     lse_map = {
-        "SPY": ("iShares Core S&P 500",            "CSPX", "S&P 500 US Equities"),
-        "TLT": ("iShares $ Treasury Bond 20yr+",   "IDTL", "Long US Treasuries"),
-        "GLD": ("iShares Physical Gold",            "IGLN", "Gold"),
-        "DBC": ("iShares Diversified Commodity",   "ICOM", "Commodities"),
-        "IEF": ("iShares $ Treasury Bond 7-10yr",  "IBTM", "Medium US Treasuries"),
-        "TIP": ("iShares $ TIPS",                  "ITPS", "US Inflation Bonds"),
-        "SHY": ("iShares $ Treasury Bond 1-3yr",   "IBTS", "Short US Treasuries"),
+        "SPY": ("iShares Core S&P 500",            "CSPX.L", "S&P 500 US Equities"),
+        "TLT": ("iShares $ Treasury Bond 20yr+",   "IDTL.L", "Long US Treasuries"),
+        "GLD": ("iShares Physical Gold",            "IGLN.L", "Gold"),
+        "DBC": ("iShares Diversified Commodity",   "ICOM.L", "Commodities"),
+        "IEF": ("iShares $ Treasury Bond 7-10yr",  "IBTM.L", "Medium US Treasuries"),
+        "TIP": ("iShares $ TIPS",                  "ITPS.L", "US Inflation Bonds"),
+        "SHY": ("iShares $ Treasury Bond 1-3yr",   "IBTS.L", "Short US Treasuries"),
     }
 
     lse_df = pd.DataFrame([
@@ -201,7 +201,7 @@ with tab2:
                 top_n    = ranked.head(TOP_N).copy()
                 positive = top_n[top_n["3M Return"] > 0].copy()
 
-                cash_lse = lse_map.get(CASH_ASSET, ("", "IBTS", ""))[1]
+                cash_lse = lse_map.get(CASH_ASSET, ("", "IBTS.L", ""))[1]
 
                 note = None
                 if len(positive) == 0:
