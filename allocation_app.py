@@ -57,12 +57,9 @@ with tab1:
                 prices_daily = raw["Close"] if len(ASSETS) > 1 else raw["Close"].to_frame(ASSETS[0])
                 prices_monthly = prices_daily.resample("ME").last()
     
-                today = datetime.today()
-                last_month_end = prices_monthly.index[-1]
-                if prices_monthly.index[-1].month == today.month:
-                    next_month = (today.replace(day=1) + timedelta(days=32)).replace(day=1)
-                    st.warning(f"⚠️ Running mid-month — {today.strftime('%B')} not yet complete. For a clean signal, run on or after {next_month.strftime('%b 1')}.")
-                    prices_monthly = prices_monthly.iloc[:-1]
+                latest = prices_daily.iloc[[-1]]
+                if latest.index[0] > prices_monthly.index[-1]:
+                    prices_monthly = pd.concat([prices_monthly, latest])
     
                 if len(prices_monthly) < LOOKBACK_MONTHS + 1:
                     st.error("Not enough monthly data. Try reducing the lookback period.")
@@ -184,10 +181,9 @@ with tab2:
                 prices_daily = raw["Close"] if len(lse_tickers) > 1 else raw["Close"].to_frame(lse_tickers[0])
                 prices_monthly = prices_daily.resample("ME").last()
 
-                if prices_monthly.index[-1].month == datetime.today().month:
-                    next_month = (end_date.replace(day=1) + timedelta(days=32)).replace(day=1)
-                    st.warning(f"⚠️ Running mid-month — {end_date.strftime('%B')} not yet complete. For a clean signal, run on or after {next_month.strftime('%b 1')}.")
-                    prices_monthly = prices_monthly.iloc[:-1]
+                latest = prices_daily.iloc[[-1]]
+                if latest.index[0] > prices_monthly.index[-1]:
+                    prices_monthly = pd.concat([prices_monthly, latest])
 
                 if len(prices_monthly) < LOOKBACK_MONTHS + 1:
                     st.error("Not enough monthly data. Try reducing the lookback period.")
