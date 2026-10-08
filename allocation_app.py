@@ -545,3 +545,26 @@ with tab5:
  
     if st.button("▶ Get Current Top 3", type="primary", use_container_width=True):
         with st.spinner("Checking all S&P 500 stocks, this can take about a minute..."):
+            live = t3_live_top3()
+        if live.empty:
+            st.error("Could not load live data. Try again in a minute.")
+        else:
+            live = live.reset_index(drop=True)
+            live.index = live.index + 1
+            st.dataframe(live, use_container_width=True)
+            st.caption("Equal weight: 33.3% of your money in each.")
+
+    st.subheader("Year-end top 3 history")
+    hist = pd.DataFrame({
+        "Year-end": list(T3_HISTORY.keys()),
+        "#1": [t3_label(v[0]) for v in T3_HISTORY.values()],
+        "#2": [t3_label(v[1]) for v in T3_HISTORY.values()],
+        "#3": [t3_label(v[2]) for v in T3_HISTORY.values()],
+    })
+    hist["Hold during"] = hist["Year-end"] + 1
+    st.dataframe(hist.sort_values("Year-end", ascending=False),
+                 use_container_width=True, hide_index=True)
+
+    st.warning("The history table was typed in from memory, so some spots "
+               "(especially before 2000) may be off. Check it against a real "
+               "data source. It stops at 2025 and won't add new years by itself.")
