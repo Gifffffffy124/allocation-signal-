@@ -4,6 +4,8 @@ import pandas as pd
 import numpy as np
 import requests
 from datetime import datetime, timedelta
+import io
+from concurrent.futures import ThreadPoolExecutor
 
 def send_telegram(message):
     token = st.secrets["TELEGRAM_TOKEN"]
@@ -196,7 +198,72 @@ def pf_display(pf_scores, allocations, label):
     pf_lines = "\n".join([f"  {row['Asset']}: {row['Weight %']:.1f}%" for _, row in alloc_df.iterrows()])
     msg = f"{label} *Phantom Flow Signal — {datetime.today().strftime('%Y-%m-%d')}*\n{pf_lines}"
     send_telegram(msg)
-
+# ── Top 3 by market cap (S&P 500) ────────────────────────────
+T3_NAMES = {
+    "XOM": "Exxon", "IBM": "IBM", "GE": "General Electric", "T": "AT&T",
+    "MO": "Philip Morris (Altria)", "KO": "Coca-Cola", "MSFT": "Microsoft",
+    "CSCO": "Cisco", "WMT": "Walmart", "AAPL": "Apple", "GOOGL": "Alphabet/Google",
+    "AMZN": "Amazon", "NVDA": "Nvidia",
+}
+ 
+# Year-end top 3, typed in from memory (approximate - verify before relying on it)
+T3_HISTORY = {
+    1990: ["XOM", "IBM", "GE"], 1991: ["XOM", "GE", "T"], 1992: ["XOM", "GE", "MO"],
+    1993: ["XOM", "GE", "T"], 1994: ["XOM", "GE", "T"], 1995: ["GE", "XOM", "KO"],
+    1996: ["GE", "KO", "XOM"], 1997: ["GE", "KO", "XOM"], 1998: ["MSFT", "GE", "XOM"],
+    1999: ["MSFT", "GE", "CSCO"], 2000: ["GE", "XOM", "MSFT"], 2001: ["GE", "MSFT", "XOM"],
+    2002: ["MSFT", "GE", "XOM"], 2003: ["MSFT", "GE", "XOM"], 2004: ["GE", "XOM", "MSFT"],
+    2005: ["XOM", "GE", "MSFT"], 2006: ["XOM", "GE", "MSFT"], 2007: ["XOM", "GE", "MSFT"],
+    2008: ["XOM", "WMT", "MSFT"], 2009: ["XOM", "MSFT", "AAPL"], 2010: ["XOM", "AAPL", "MSFT"],
+    2011: ["XOM", "AAPL", "MSFT"], 2012: ["AAPL", "XOM", "GOOGL"], 2013: ["AAPL", "XOM", "GOOGL"],
+    2014: ["AAPL", "XOM", "MSFT"], 2015: ["AAPL", "GOOGL", "MSFT"], 2016: ["AAPL", "GOOGL", "MSFT"],
+    2017: ["AAPL", "GOOGL", "MSFT"], 2018: ["MSFT", "AAPL", "AMZN"], 2019: ["AAPL", "MSFT", "GOOGL"],
+    2020: ["AAPL", "MSFT", "AMZN"], 2021: ["AAPL", "MSFT", "GOOGL"], 2022: ["AAPL", "MSFT", "GOOGL"],
+    2023: ["AAPL", "MSFT", "GOOGL"], 2024: ["AAPL", "NVDA", "MSFT"], 2025: ["NVDA", "AAPL", "GOOGL"],
+}
+ 
+# Backup list, only used if the S&P 500 list can't be downloaded
+T3_FALLBACK = ["NVDA", "AAPL", "MSFT", "GOOGL", "AMZN", "META", "AVGO", "TSLA",
+               "BRK-B", "LLY", "JPM", "WMT", "XOM", "ORCL", "V", "NFLX"]
+ 
+ 
+@st.cache_data(ttl=86400)
+def t3_sp500_tickers():
+    """Current S&P 500 members, taken from Wikipedia's list."""
+    try:
+        url = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
+        html = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=20).text
+        df = pd.read_html(io.StringIO(html))[0]
+        tickers = df["Symbol"].str.replace(".", "-", regex=False).tolist()
+        # GOOG and GOOGL are the same company, so keep only GOOGL
+        return [t for t in tickers if t != "GOOG"]
+    except Exception:
+        return T3_FALLBACK
+ 
+ 
+@st.cache_data(ttl=21600)
+def t3_live_top3():
+    tickers = t3_sp500_tickers()
+ 
+    def get_cap(t):
+        try:
+            return t, yf.Ticker(t).fast_info["market_cap"]
+        except Exception:
+            return t, None
+ 
+    with ThreadPoolExecutor(max_workers=16) as ex:
+        results = list(ex.map(get_cap, tickers))
+    rows = [{"Ticker": t, "Market cap ($B)": round(c / 1e9, 1)}
+            for t, c in results if c]
+    df = pd.DataFrame(rows)
+    if df.empty:
+        return df
+    return df.sort_values("Market cap ($B)", ascending=False).head(3)
+ 
+ 
+def t3_label(t):
+    return f"{t} ({T3_NAMES.get(t, t)})"
+ 
 # ── Page config ──────────────────────────────
 st.set_page_config(page_title="Allocation Signal", page_icon="📊", layout="centered")
 
@@ -470,3 +537,11 @@ with tab4:
 
             except Exception as e:
                 st.error(f"Something went wrong: {e}")
+
+with tab5:
+    st.subheader("Top 3 Stocks by Market Cap (S&P 500)")
+    st.caption("Hold the 3 biggest S&P 500 companies, 33.3% each, reset once a year. "
+               "Educational only, not financial advice.")
+ 
+    if st.button("▶ Get Current Top 3", type="primary", use_container_width=True):
+        with st.spinner("Checking all S&P 500 stocks (first run can take
