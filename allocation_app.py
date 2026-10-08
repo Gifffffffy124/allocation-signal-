@@ -544,4 +544,4 @@ with tab5:
                "Educational only, not financial advice.")
  
     if st.button("▶ Get Current Top 3", type="primary", use_container_width=True):
-        with st.spinner("Checking all S&P 500 stocks (first run can take
+        with st.spinner("Checking all S&P 500 stocks, this can take about a minute..."):
