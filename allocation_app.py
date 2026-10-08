@@ -288,7 +288,7 @@ CASH_ASSET = st.sidebar.text_input("Cash / safe-haven asset", value="SHY")
 st.title("📊 Monthly Allocation Signal")
 st.caption("Momentum strategy — ranks assets by return, holds top N with power-weighted allocation.")
 
-tab1, tab2, tab3, tab4 = st.tabs(["🇺🇸 US Signal", "🇬🇧 London Equivalents", "👻 Phantom Flow (New)", "👻 Phantom Flow (Old)"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["🇺🇸 US Signal", "🇬🇧 London Equivalents", "👻 Phantom Flow (New)", "👻 Phantom Flow (Old)", "📈 Top 3 Stocks"])
 
 with tab1:
     if not ASSETS:
